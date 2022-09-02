@@ -1,13 +1,25 @@
 import './App.css';
 import {useEffect, useState} from "react";
+import {useMutation} from "react-query";
+import axios from "axios";
+import htmlToMarkdown from '@wcj/html-to-markdown';
 
-function App() {
+
+const App: React.FC = () => {
   const [book, setBook] = useState<number>(0)
-  const [chapterList, setChapterList] = useState<string[]>([])
+  const [chapterCount, setChapterCount] = useState<number>(10)
   const [chapter, setChapter] = useState<number>(0)
   const [width, setWidth] = useState<number>(window.innerWidth);
-  const [verseList, setVerseList] = useState<number[]>([])
-  const books = [
+  const verseCount = 178
+  const mutation = useMutation(async (data: { book: number, chapter: number }) => {
+    return getVerseContent(data.book, data.chapter, 'text');
+  }, {
+    onSuccess: (data, variables, context) => {
+      console.log(data, variables, context)
+    },
+  })
+  type bookType = [string, number, number, string, number, string]
+  const books: bookType[] = [
     ["Rodzaju", 1, 50, "#3b3547", 176, "Rodz."],
     ["Wyjścia", 2, 40, "#3b3547", 176, "Wyjś."],
     ["Kapłańska", 3, 27, "#3b3547", 176, "Kapł."],
@@ -75,29 +87,14 @@ function App() {
     ["Judy", 65, 1, "#544c63", 176, "Judy."],
     ["Objawienie", 66, 22, "#3b3547", 176, "Obja."]
   ];
-  let chapterListRender: any = []
   const isMobile = width <= 768;
 
   useEffect(() => {
     /**
      * tworzy listę wszyskich rozdziałów
      */
-    if (book) {
-      for (let i = 1; i <= books[book - 1][2]; i++) {
-        chapterListRender.push(<button className={'cell'} key={`chapter${i}`}
-                                       onClick={_ => setChapter(i)}>{i}</button>)
-        setChapterList(chapterListRender)
-      }
-    }
-
-    /** tworzy tablicę wszystkich wersetów */
-    if (verseList.length === 0) {
-      let arr: number[] = []
-      for (let i = 1; i < 177; i++) {
-        arr.push(i)
-      }
-      setVerseList(arr)
-    }
+    const chapterCount: number = book > 0 ? books[book - 1][2] : 0
+    setChapterCount(chapterCount)
 
     window.addEventListener('resize', handleWindowSizeChange);
     return () => {
@@ -105,6 +102,78 @@ function App() {
     }
     // eslint-disable-next-line
   }, [book])
+
+  const getVerseContent = async (book: number, chapter: number, config: 'text' | 'markdown') => {
+    return axios.get(`https://wol.jw.org/pl/wol/b/r12/lp-p/nwtsty/${book}/${chapter}`).then(async ({data}) => {
+      const htmlData = data || '<dit id="article"></dit>'
+      const htmlElement = new DOMParser().parseFromString(htmlData, "text/html")
+      const article = htmlElement.getElementById('article')
+      if (article) {
+        const scalableui = article.querySelector('.scalableui')
+        if (scalableui) {
+
+          // usuwa niepotrzebny content
+          const header = scalableui.querySelector('header')
+          const pswp = scalableui.querySelector('.pswp')
+
+          if (header) {
+            header.remove()
+          }
+          if (pswp) {
+            pswp.remove()
+          }
+
+          scalableui.innerHTML = scalableui.innerHTML.replace(`<!-- Root element of lightbox -->`, '')
+
+          // @ts-ignore
+          if (config === 'marcdown') {
+            // zamienia linki na linki do strony
+            scalableui.innerHTML = scalableui.innerHTML.replaceAll('/pl/wol', 'http://wol.jw.org/pl/wol')
+
+            // to markdown
+            const markdown = await htmlToMarkdown({html: scalableui.innerHTML});
+
+            // rozdziela na wersety
+            return markdown.replaceAll(/\[(\d)/g, '<<<NEW>>>$&').split('<<<NEW>>>')
+          }
+
+          if (config === 'text') {
+            // zamiana liczby rozdziału
+            scalableui.innerHTML = scalableui.innerHTML.replace(/<strong>.*<\/strong>/g, '1')
+
+            let verses = []
+            // Dla każdego komponentu .v
+            const verseClassCount = scalableui.getElementsByClassName('v').length
+            for (let i = 0; i < verseClassCount; i++) {
+              const component = scalableui.querySelector('.v')
+              if (component) {
+                // Usunięcie linków
+                const linkComponentCount = component.getElementsByClassName('b').length
+                for (let j = 0; j < linkComponentCount; j++) {
+                  const bComponent = component.querySelector('.b')
+                  if (bComponent) {
+                    bComponent.remove()
+                  }
+                }
+
+                const fnComponentCount = component.getElementsByClassName('fn').length
+                for (let j = 0; j < fnComponentCount; j++) {
+                  const fnComponent = component.querySelector('.fn')
+                  if (fnComponent) {
+                    fnComponent.remove()
+                  }
+                }
+                verses.push(component.textContent)
+                component.remove()
+              }
+            }
+            return verses
+          }
+        }
+      }
+      return 'test'
+    }).catch(e => console.log(e))
+  }
 
   /** odświerza szerokość okna */
   const handleWindowSizeChange = () => {
@@ -117,6 +186,39 @@ function App() {
   const toBooksList = () => {
     setBook(0)
     setChapter(0)
+  }
+
+  /**
+   * renderList
+   * render list of possible verse or chapters
+   */
+  type keyTypes = 'chapter' | 'verse'
+  const renderList = (count: number | Promise<number>, key: keyTypes) => {
+    const arr: React.ReactElement[] = []
+    const handleClick = (value: number, key: keyTypes) => {
+      switch (key) {
+        case 'chapter':
+          setChapter(value);
+          mutation.mutate({book: book, chapter: value})
+          break;
+        case 'verse':
+          handleOpenVerse({verse: value});
+          console.log(mutation.data)
+          break;
+      }
+    }
+    for (let i = 1; i <= count; i++) {
+      arr.push(
+        <button
+          className={`cell ${key}`}
+          key={`${key}-${i}`}
+          onClick={_ => handleClick(i, key)}
+        >
+          {i}
+        </button>
+      )
+    }
+    return arr
   }
 
   const handleOpenVerse = ({verse}: { verse: number }) => {
@@ -144,10 +246,11 @@ function App() {
 
   return (
     <div className="App">
-      <header>
+      <div>
         <span className={'book'}>{book > 0 ? `${books[book - 1][0]} ${chapter > 0 ? chapter : ''}` : 'Biblia'}</span>
+        {/*<span>{mutation.isSuccess && mutation.data}</span>*/}
         <button className={'cell back'} onClick={_ => toBooksList()}>Lista</button>
-      </header>
+      </div>
       <div className={'grid'}>
         {/* Lista ksiąg */}
         {!book && (
@@ -168,21 +271,11 @@ function App() {
         )}
         {/* Lista rozdziałów */}
         {book > 0 && chapter === 0 && (<>
-          {chapterList}
+          {renderList(chapterCount, 'chapter')}
         </>)}
         {/* Lista wersetów */}
         {chapter > 0 && (<>
-          {verseList.map(verse => {
-            return (<>
-              <button
-                className={'cell verse'}
-                key={`w${verse}`}
-                onClick={_ => handleOpenVerse({verse: verse})}
-              >
-                {verse}
-              </button>
-            </>)
-          })}
+          {renderList(verseCount, 'verse')}
         </>)}
       </div>
       <div className={'grid'}>
@@ -195,7 +288,7 @@ function App() {
               return <button
                 className={'cell'}
                 key={book[0]}
-                onClick={_ => setBook(index + 1)}
+                onClick={_ => setBook(index + 40)}
                 style={{backgroundColor: `${book[3]}`}}
               >
                 {isMobile ? book[5] : book[0]}
