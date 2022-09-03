@@ -10,12 +10,14 @@ const App: React.FC = () => {
   const [chapterCount, setChapterCount] = useState<number>(10)
   const [chapter, setChapter] = useState<number>(0)
   const [width, setWidth] = useState<number>(window.innerWidth);
-  const verseCount = 178
+  const [verseCount, setVerseCount] = useState<number>(176)
   const mutation = useMutation(async (data: { book: number, chapter: number }) => {
     return getVerseContent(data.book, data.chapter, 'text');
   }, {
     onSuccess: (data, variables, context) => {
-      console.log(data, variables, context)
+      if (data) {
+        setVerseCount(data.length)
+      }
     },
   })
   type bookType = [string, number, number, string, number, string]
@@ -139,35 +141,49 @@ const App: React.FC = () => {
 
           if (config === 'text') {
             // zamiana liczby rozdziału
-            scalableui.innerHTML = scalableui.innerHTML.replace(/<strong>.*<\/strong>/g, '1')
 
-            let verses = []
+            // let verses = []
+            let content = [] // bez spanow, same wersety
             // Dla każdego komponentu .v
             const verseClassCount = scalableui.getElementsByClassName('v').length
             for (let i = 0; i < verseClassCount; i++) {
-              const component = scalableui.querySelector('.v')
-              if (component) {
-                // Usunięcie linków
-                const linkComponentCount = component.getElementsByClassName('b').length
-                for (let j = 0; j < linkComponentCount; j++) {
-                  const bComponent = component.querySelector('.b')
-                  if (bComponent) {
-                    bComponent.remove()
-                  }
-                }
-
-                const fnComponentCount = component.getElementsByClassName('fn').length
-                for (let j = 0; j < fnComponentCount; j++) {
-                  const fnComponent = component.querySelector('.fn')
-                  if (fnComponent) {
-                    fnComponent.remove()
-                  }
-                }
-                verses.push(component.textContent)
-                component.remove()
+              const vComponent = scalableui.querySelector('.v')
+              if (vComponent) {
+                vComponent.innerHTML = vComponent.innerHTML.replace(/<strong>.*<\/strong>/g, '1')
+                content.push(vComponent.innerHTML)
+                vComponent.remove()
               }
             }
-            return verses
+
+            // const verses = content.join('').replaceAll(/<a href.*>(.*)<\/a>/g, '<< $1 >>')
+            let verses = content.join('')
+            verses = verses.replaceAll('&nbsp;', ' ')
+            verses = verses.replaceAll(/<a href="\/pl\/wol\/dx\/r12\/lp-p\/\d*\/\d*" class="[\w\s]*">(\d*\s)<\/a>/g, 'NEW$1')
+            const versesHTML = new DOMParser().parseFromString(verses, "text/html")
+            const linkComponentCount = versesHTML.getElementsByClassName('b').length
+            for (let j = 0; j < linkComponentCount; j++) {
+              const bComponent = versesHTML.querySelector('.b')
+              if (bComponent) {
+                bComponent.remove()
+              }
+            }
+
+            const fnComponentCount = versesHTML.getElementsByClassName('fn').length
+            for (let j = 0; j < fnComponentCount; j++) {
+              const fnComponent = versesHTML.querySelector('.fn')
+              if (fnComponent) {
+                fnComponent.remove()
+              }
+            }
+
+            const versesHTMLBody = versesHTML.querySelector('body')
+            if (versesHTMLBody) {
+              const versesContent = versesHTMLBody.textContent// || versesHTML.innerHTML
+              if (versesContent) {
+                const versesArray = versesContent.split('NEW')
+                return versesArray.filter(verse => verse !== '')
+              }
+            }
           }
         }
       }
