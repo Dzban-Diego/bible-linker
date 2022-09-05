@@ -1,3 +1,7 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
 .App, body, html {
     text-align: center;
     background-color: #000000;
@@ -21,6 +25,11 @@ header {
 .book {
     padding: 1rem;
     font-size: 1.4rem;
+    color: white;
+}
+
+.config {
+    color: white
 }
 
 .grid {
