@@ -1,1 +1,1 @@
-export type copyTypes = 'text' | 'markdown' | 'link_markdown' | 'link'
+export type copyTypes = 'text' | 'markdown' | 'link_markdown' | 'link' | 'array'

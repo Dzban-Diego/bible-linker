@@ -1,6 +1,7 @@
 {
   "name": "bible_linker_ts",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@mui/icons-material": "^5.10.3",

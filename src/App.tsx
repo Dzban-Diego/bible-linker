@@ -16,7 +16,7 @@ const App: React.FC = () => {
   const [copyType] = useAtom(copyTypeAtom)
 
   const mutation = useMutation(async (data: { book: number, chapter: number }) => {
-    return extractVerses(data.book, data.chapter, copyType);
+    return extractVerses(data.book, data.chapter, 'array');
   }, {
     onSuccess: (data, variables, context) => {
       if (data) {
@@ -136,8 +136,24 @@ const App: React.FC = () => {
           mutation.mutate({book: book, chapter: value})
           break;
         case 'verse':
-          handleOpenVerse({verse: value});
-          console.log(mutation.data)
+          let test: string[][] = []
+          // handleOpenVerse({verse: value});
+
+          const verseData = mutation.data && mutation.data[value - 1]
+          console.log(verseData)
+
+          if (verseData) {
+            window.open(verseData[2])
+
+            let el = document.createElement('textarea');
+            el.value = verseData[1];
+            el.setAttribute('readonly', '');
+            document.body.appendChild(el);
+            el.select();
+            document.execCommand('copy');
+            document.body.removeChild(el);
+          }
+
           break;
       }
     }
@@ -153,29 +169,6 @@ const App: React.FC = () => {
       )
     }
     return arr
-  }
-
-  const handleOpenVerse = ({verse}: { verse: number }) => {
-    /**
-     * formated books/chapter/verse
-     * dodane 0 na początku by link dobrze wysłać link
-     * księga 2 znaki, rozdział i werset 3 znaki
-     */
-    const formatedBook: string = String(book).padStart(2, '0')
-    const formatedChapter: string = String(chapter).padStart(3, '0')
-    const formatedVerse: string = String(verse).padStart(3, '0')
-
-    /** Otwiera  werset w jw library*/
-    window.open('?kupa=24')//`https://jw.org/finder?srcid=jwlshare&wtlocale=P&prefer=lang&bible=${formatedBook}${formatedChapter}${formatedVerse}&pub=nwtsty`, 'windowname', '"height=200,width=200')
-
-    /** Kopiuje wartość do schowka*/
-    let el = document.createElement('textarea');
-    el.value = `> [${books[book - 1][0]} ${chapter}:${verse}](https://jw.org/finder?srcid=jwlshare&wtlocale=P&prefer=lang&bible=${book < 10 ? `0${book}` : book}${String(chapter).padStart(3, '0')}${String(verse).padStart(3, '0')}&pub=nwtsty)`;
-    el.setAttribute('readonly', '');
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
   }
 
   return (
