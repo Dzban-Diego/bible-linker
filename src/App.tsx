@@ -143,13 +143,17 @@ const App: React.FC = () => {
           console.log(verseData)
 
           if (verseData) {
-            window.open(verseData[2])
+            window.open(verseData[2], '', 'left=600,top=250,width=700,height=700')
+
+            console.log(verseData[1])
 
             let el = document.createElement('textarea');
-            el.value = verseData[1];
+            el.value = verseData[0];
             el.setAttribute('readonly', '');
             document.body.appendChild(el);
             el.select();
+            el.setSelectionRange(0, 99999);
+            navigator.clipboard.writeText(el.value);
             document.execCommand('copy');
             document.body.removeChild(el);
           }
