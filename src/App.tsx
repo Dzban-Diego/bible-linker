@@ -1,17 +1,20 @@
 import './App.css';
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import {useMutation} from "react-query";
 import extractVerses from './utils/extractVerses'
 import {copyTypeAtom} from './utils/initAtoms'
 import {useAtom} from "jotai";
 
 const App: React.FC = () => {
+  const input = useRef<any>(null)
   const [book, setBook] = useState<number>(0)
+  const [bookString, setBookString] = useState<string>('')
   const [chapterCount, setChapterCount] = useState<number>(10)
   const [chapter, setChapter] = useState<number>(0)
   const [width, setWidth] = useState<number>(window.innerWidth);
   const [verseCount, setVerseCount] = useState<number>(176)
   const [showConfig, setShowConfig] = useState<boolean>(false)
+  const [selectedOption, setSelectedOption] = useState<any>(null);
 
   const [copyType] = useAtom(copyTypeAtom)
 
@@ -96,6 +99,10 @@ const App: React.FC = () => {
   const isMobile = width <= 768;
 
   useEffect(() => {
+    if (input.current) {
+      input.current.focus()
+    }
+
     /**
      * tworzy listę wszyskich rozdziałów
      */
@@ -108,6 +115,7 @@ const App: React.FC = () => {
     }
     // eslint-disable-next-line
   }, [book])
+
 
   /** odświerza szerokość okna */
   const handleWindowSizeChange = () => {
@@ -175,12 +183,69 @@ const App: React.FC = () => {
     return arr
   }
 
+  const setBookInput = () => {
+    const bookObj = books.find(book => book[0].toUpperCase() === bookString.toUpperCase() || book[5].toUpperCase().replace('.', '') === bookString.toUpperCase())
+    if (bookObj) {
+      setBook(bookObj[1])
+    }
+
+    if (bookString === 'b') {
+      setBook(0)
+      setChapter(0)
+    }
+
+    setBookString('')
+
+    const num = parseInt(bookString)
+    if (num) {
+      if (chapter !== 0) {
+        const verseData = mutation.data && mutation.data[num - 1]
+        console.log(verseData)
+
+        if (verseData) {
+          window.open(verseData[2], '', 'left=600,top=250,width=700,height=700')
+
+          console.log(verseData[1])
+
+          let el = document.createElement('textarea');
+          el.value = verseData[0];
+          el.setAttribute('readonly', '');
+          document.body.appendChild(el);
+          el.select();
+          el.setSelectionRange(0, 99999);
+          navigator.clipboard.writeText(el.value);
+          document.execCommand('copy');
+          document.body.removeChild(el);
+        }
+      }
+      if (book !== 0) {
+        setChapter(num);
+        mutation.mutate({book: book, chapter: num})
+      }
+
+    }
+
+  }
+
+  // const options = () => {
+  //   return books.map(book => {
+  //     return {
+  //       name: book[0],
+  //       value: book[0],
+  //     }
+  //   })
+  // }
+
   return (
     <div className="App">
       <header>
         <span className={'book'}>{book > 0 ? `${books[book - 1][0]} ${chapter > 0 ? chapter : ''}` : 'Biblia'}</span>
         {/*<span>{mutation.isSuccess && mutation.data}</span>*/}
         <div>
+          <input type="text" className={'text-black'} id="one" value={bookString}
+                 onChange={e => setBookString(e.target.value)} onKeyDown={(event) => {
+            if (event.keyCode === 13) setBookInput()
+          }} ref={input}/>
           <button className="btn btn-primary rounded-none" onClick={_ => toBooksList()}>Lista</button>
         </div>
       </header>
