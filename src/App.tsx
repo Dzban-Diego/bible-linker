@@ -6,7 +6,9 @@ import {useGetChapter} from './utils/useGetChapter';
 export const App = () => {
   const [book, setBook] = useState<book_type>();
   const [chapter_index, setChapterIndex] = useState<number>();
-  const {chapter, updateChapter} = useGetChapter();
+  const {chapter, updateChapter, clearChatper} = useGetChapter();
+
+  const [command, setCommand] = useState<string>();
 
   const [width, setWidth] = useState<number>(window.innerWidth);
 
@@ -22,6 +24,7 @@ export const App = () => {
   const clear = () => {
     setBook(undefined);
     setChapterIndex(undefined);
+    clearChatper();
   };
 
   const handleWindowSizeChange = () => {
@@ -39,12 +42,59 @@ export const App = () => {
     }
   };
 
-  const handleVersePress = (verse: number) => {
-    console.log('verseclick');
-    if (chapter) {
-      console.log(chapter[verse - 1]);
+  const handleVersePress = (verse_index: number) => {
+    if (!chapter) return;
+    const verse = chapter[verse_index - 1];
+
+    // todo pobrac ustawienia
+
+    window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
+
+    let el = document.createElement('textarea');
+    el.value = verse.content;
+    el.setAttribute('readonly', '');
+    document.body.appendChild(el);
+    el.select();
+    el.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(el.value);
+    document.execCommand('copy');
+    document.body.removeChild(el);
+  };
+
+  const execCommand = () => {
+    setCommand('');
+    if (!command) return;
+
+    switch (command) {
+      case 'c':
+        return clear();
+      case 'b': {
+        if (chapter) {
+          setChapterIndex(undefined);
+          clearChatper();
+        } else {
+          return clear();
+        }
+      }
     }
-    // TODO
+
+    if (parseInt(command)) {
+      if (chapter_index) {
+        handleVersePress(parseInt(command));
+      } else {
+        handleChapterPress(parseInt(command));
+      }
+    } else {
+      const book = books.find(
+        (book) =>
+          book.book_name.toUpperCase() === command.toUpperCase() ||
+          book.short_book_name.toUpperCase().replace('.', '') ===
+            command.toUpperCase(),
+      );
+      if (book) {
+        handleBookPress(book);
+      }
+    }
   };
 
   type list_type = 'chapters' | 'verses';
@@ -75,17 +125,17 @@ export const App = () => {
           {book ? `${book.book_name} ${chapter_index ?? ''}` : 'Biblia'}
         </span>
         <div>
-          {/*<input*/}
-          {/*  type="text"*/}
-          {/*  className={'text-black'}*/}
-          {/*  id="one"*/}
-          {/*  value={bookString}*/}
-          {/*  onChange={(e) => setBookString(e.target.value)}*/}
-          {/*  onKeyDown={(event) => {*/}
-          {/*    if (event.keyCode === 13) setBookInput();*/}
-          {/*  }}*/}
-          {/*  ref={input}*/}
-          {/*/>*/}
+          <input
+            autoFocus
+            type="text"
+            className={'text-black'}
+            id="one"
+            value={command}
+            onChange={(e) => setCommand(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.keyCode === 13) execCommand();
+            }}
+          />
           <button
             className="btn btn-primary rounded-none"
             onClick={(_) => clear()}>
