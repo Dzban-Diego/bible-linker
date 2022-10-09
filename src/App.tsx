@@ -107,7 +107,9 @@ export const App = () => {
     for (let i = 1; i <= count; i++) {
       arr.push(
         <button
-          className={`cell ${type}`}
+          className={`text-white border-0 p-3 ${
+            type === 'verses' ? 'bg-[#757575]' : 'bg-[#746a84]'
+          }`}
           key={`${type}-${i}`}
           onClick={() => callback(i)}>
           {i}
@@ -119,12 +121,12 @@ export const App = () => {
   };
 
   return (
-    <div className="App">
-      <header>
-        <span className={'book'}>
+    <div className="text-center bg-black text-3xl">
+      <header className={'flex justify-between w-full p-3'}>
+        <span className={'text-white'}>
           {book ? `${book.book_name} ${chapter_index ?? ''}` : 'Biblia'}
         </span>
-        <div>
+        <div className={'flex justify-center'}>
           <input
             autoFocus
             type="text"
@@ -143,7 +145,7 @@ export const App = () => {
           </button>
         </div>
       </header>
-      <div className={'grid'}>
+      <div className={'w-screen grid grid-cols-5 content-center gap-2 mb-8'}>
         {/* Lista ksiąg */}
         {!book && (
           <>
@@ -154,7 +156,9 @@ export const App = () => {
               .map((book, index) => {
                 return (
                   <button
-                    className={'cell'}
+                    className={
+                      'text-white flex content-between align-middle p-3'
+                    }
                     key={book.book_id}
                     onClick={(_) => handleBookPress(book)}
                     style={{backgroundColor: `${book.color}`}}>
@@ -173,7 +177,7 @@ export const App = () => {
           <>{renderList(chapter.length, 'verses', handleVersePress)}</>
         )}
       </div>
-      <div className={'grid'}>
+      <div className={'w-screen grid grid-cols-5 content-center gap-2 mb-8'}>
         {/* Nowy testament */}
         {!book && (
           <>
@@ -184,7 +188,9 @@ export const App = () => {
               .map((book, index) => {
                 return (
                   <button
-                    className={'cell'}
+                    className={
+                      'text-white flex content-between align-middle p-3'
+                    }
                     key={book.book_id}
                     onClick={(_) => handleBookPress(book)}
                     style={{backgroundColor: `${book.color}`}}>
