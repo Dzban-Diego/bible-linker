@@ -20,8 +20,17 @@ export const useGetChapter = (): {
   };
 
   const fetchChapter = async (book_index: number, chapter_index: number) => {
+    const options = {
+      method: 'GET',
+      header: {
+        'Content-type': 'text/*; charset=utf-8',
+        Accept: 'text/*',
+      },
+    };
+
     const response = await fetch(
       `https://wol.jw.org/pl/wol/b/r12/lp-p/nwtsty/${book_index}/${chapter_index}`,
+      options,
     );
 
     if (response.status !== 200) {
