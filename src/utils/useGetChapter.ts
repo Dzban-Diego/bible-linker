@@ -10,7 +10,8 @@ export type chapter_type = verse_type[] | false;
 
 export const useGetChapter = (): {
   chapter: chapter_type;
-  updateChapter?: (book_index: number, chapter_index: number) => void;
+  updateChapter: (book_index: number, chapter_index: number) => void;
+  clearChatper: () => void;
 } => {
   const [chapter, setChapter] = useState<chapter_type>();
 
@@ -19,7 +20,6 @@ export const useGetChapter = (): {
   };
 
   const fetchChapter = async (book_index: number, chapter_index: number) => {
-    if (!book_index || !chapter_index) return false;
     const response = await fetch(
       `https://wol.jw.org/pl/wol/b/r12/lp-p/nwtsty/${book_index}/${chapter_index}`,
     );
@@ -93,10 +93,13 @@ export const useGetChapter = (): {
     return chapterData;
   };
 
+  const clearChatper = () => {
+    setChapter(false);
+  };
+
   return {
     chapter: chapter ?? false,
     updateChapter,
+    clearChatper,
   };
 };
-
-export {};
