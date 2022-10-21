@@ -20,17 +20,19 @@ export const useGetChapter = (): {
   };
 
   const fetchChapter = async (book_index: number, chapter_index: number) => {
-
+    const response = await fetch(`/api/verse?b=${book_index}&c=${chapter_index}`)
 
     if (response.status !== 200) {
       console.log('%cError', response);
     }
 
-    const data = await response.text();
-    const data_html = new DOMParser().parseFromString(data, 'text/html');
+    const data = await response.json();
+    const data_html = new DOMParser().parseFromString(data.data, 'text/html');
 
     const article_content = data_html.querySelector('article');
     const chapter_content = article_content?.querySelector('.scalableui');
+
+    console.log(article_content)
 
     if (!chapter_content) return false;
 
@@ -44,7 +46,7 @@ export const useGetChapter = (): {
       '',
     );
 
-    let content = [];
+    const content = [];
     // for every .v component
     const verseClassCount = chapter_content.getElementsByClassName('v').length;
     for (let i = 0; i < verseClassCount; i++) {
@@ -70,7 +72,7 @@ export const useGetChapter = (): {
     const chapter_content_with_links = chapter_text
       .split('VERSE_SPLIT')
       .filter((verse) => verse !== '');
-    let chapter_content_text = chapter_text
+    const chapter_content_text = chapter_text
       .replaceAll(/\<.*?\>?\<.*?\>/g, '')
       .split('VERSE_SPLIT')
       .filter((verse) => verse !== '');
@@ -83,8 +85,8 @@ export const useGetChapter = (): {
           3,
           '0',
         )}&pub=nwtsty`,
-        content: chapter_content_text[index],
-        content_with_links: chapter_content_with_links[index],
+        content: chapter_content_text[index]?? '',
+        content_with_links: chapter_content_with_links[index]?? '',
       };
     });
 

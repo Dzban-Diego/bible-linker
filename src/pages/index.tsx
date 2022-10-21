@@ -55,7 +55,8 @@ const Index: NextPage = () => {
     window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
 
     const el = document.createElement('textarea');
-    el.value = verse.content;
+    el.value = `> [${book?.book_name} ${chapter_index}:${verse_index}](${verse.link}) ${verse.content}`;
+    // el.value = `(${book?.book_name} ${chapter_index}:${verse_index}) ${verse.content}`;
     el.setAttribute('readonly', '');
     document.body.appendChild(el);
     el.select();
