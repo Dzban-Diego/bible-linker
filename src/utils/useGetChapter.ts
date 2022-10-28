@@ -32,8 +32,6 @@ export const useGetChapter = (): {
     const article_content = data_html.querySelector('article');
     const chapter_content = article_content?.querySelector('.scalableui');
 
-    console.log(article_content)
-
     if (!chapter_content) return false;
 
     // remove unnecessary tags

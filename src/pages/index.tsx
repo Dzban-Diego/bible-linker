@@ -2,11 +2,15 @@ import {useEffect, useState} from 'react';
 import {book_type, books} from '../utils/books';
 import {useGetChapter} from '../utils/useGetChapter';
 import {NextPage} from "next";
+import Config from "../Components/Config";
+import {useAtom} from "jotai";
+import {redirectToVerse} from "../utils/initAtoms";
 
 const Index: NextPage = () => {
   const [book, setBook] = useState<book_type>();
   const [chapter_index, setChapterIndex] = useState<number>();
   const {chapter, updateChapter, clearChatper} = useGetChapter();
+  const [redirectToVerses, setRedirectToVerses] = useAtom(redirectToVerse)
 
   const [command, setCommand] = useState<string>();
 
@@ -48,11 +52,14 @@ const Index: NextPage = () => {
     if (!chapter) return;
     const verse = chapter[verse_index - 1];
 
-    if(!verse) return console.log('test')
+    if(!verse) return
 
     // todo pobrac ustawienia
 
-    window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
+    console.log(redirectToVerse)
+    if(redirectToVerses){
+      window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
+    }
 
     const el = document.createElement('textarea');
     el.value = `> [${book?.book_name} ${chapter_index}:${verse_index}](${verse.link}) ${verse.content}`;
@@ -131,6 +138,7 @@ const Index: NextPage = () => {
         <span className={'text-white'}>
           {book ? `${book.book_name} ${chapter_index ?? ''}` : 'Biblia'}
         </span>
+        <Config />
         <div className={'flex justify-center'}>
           <input
             autoFocus
