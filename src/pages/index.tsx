@@ -1,17 +1,16 @@
 import {useEffect, useState} from 'react';
 import {book_type, books} from '../utils/books';
 import {useGetChapter} from '../utils/useGetChapter';
-import {NextPage} from "next";
-import Config from "../Components/Config";
-import {useAtom} from "jotai";
-import {useConfig} from "../utils/useConfig";
-import {redirectAtom} from "../utils/initAtoms";
+import {NextPage} from 'next';
+import Config from '../Components/Config';
+import {useAtom} from 'jotai';
+import {redirectAtom} from '../utils/initAtoms';
 
 const Index: NextPage = () => {
   const [book, setBook] = useState<book_type>();
   const [chapter_index, setChapterIndex] = useState<number>();
-  const {chapter, updateChapter, clearChatper} = useGetChapter();
-  const [redirect, setRedirect] = useAtom(redirectAtom)
+  const {chapter, updateChapter, clearChapter} = useGetChapter();
+  const [redirect] = useAtom(redirectAtom);
 
   const [command, setCommand] = useState<string>();
 
@@ -31,7 +30,7 @@ const Index: NextPage = () => {
   const clear = () => {
     setBook(undefined);
     setChapterIndex(undefined);
-    clearChatper();
+    clearChapter();
   };
 
   const handleWindowSizeChange = () => {
@@ -53,9 +52,9 @@ const Index: NextPage = () => {
     if (!chapter) return;
     const verse = chapter[verse_index - 1];
 
-    if(!verse) return
+    if (!verse) return;
 
-    if(redirect){
+    if (redirect) {
       window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
     }
 
@@ -81,7 +80,7 @@ const Index: NextPage = () => {
       case 'b': {
         if (chapter) {
           setChapterIndex(undefined);
-          clearChatper();
+          clearChapter();
         } else {
           return clear();
         }
@@ -149,9 +148,7 @@ const Index: NextPage = () => {
               if (event.keyCode === 13) execCommand();
             }}
           />
-          <button
-            className="bg-blue text-white"
-            onClick={(_) => clear()}>
+          <button className="bg-blue text-white" onClick={() => clear()}>
             Lista
           </button>
         </div>
@@ -164,14 +161,14 @@ const Index: NextPage = () => {
               .filter((book, index) => {
                 return index < 39;
               })
-              .map((book, index) => {
+              .map((book) => {
                 return (
                   <button
                     className={
                       'text-white flex content-between align-middle p-3'
                     }
                     key={book.book_id}
-                    onClick={(_) => handleBookPress(book)}
+                    onClick={() => handleBookPress(book)}
                     style={{backgroundColor: `${book.color}`}}>
                     {isMobile ? book.short_book_name : book.book_name}
                   </button>
@@ -196,14 +193,14 @@ const Index: NextPage = () => {
               .filter((book, index) => {
                 return index > 38;
               })
-              .map((book, index) => {
+              .map((book) => {
                 return (
                   <button
                     className={
                       'text-white flex content-between align-middle p-3'
                     }
                     key={book.book_id}
-                    onClick={(_) => handleBookPress(book)}
+                    onClick={() => handleBookPress(book)}
                     style={{backgroundColor: `${book.color}`}}>
                     {isMobile ? book.short_book_name : book.book_name}
                   </button>

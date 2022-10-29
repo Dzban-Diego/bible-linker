@@ -1,10 +1,10 @@
-import React from "react";
+import React from 'react';
 
 interface Props {
-  children: any,
+  children: React.ReactElement;
 }
 
-export const ClientOnly: React.FC<Props> = ({ children, ...delegated }) => {
+export const ClientOnly: React.FC<Props> = ({children, ...delegated}) => {
   const [hasMounted, setHasMounted] = React.useState(false);
   React.useEffect(() => {
     setHasMounted(true);
@@ -12,9 +12,5 @@ export const ClientOnly: React.FC<Props> = ({ children, ...delegated }) => {
   if (!hasMounted) {
     return null;
   }
-  return (
-    <div {...delegated}>
-      {children}
-    </div>
-  );
-}
+  return <div {...delegated}>{children}</div>;
+};

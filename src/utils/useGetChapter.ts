@@ -11,7 +11,7 @@ export type chapter_type = verse_type[] | false;
 export const useGetChapter = (): {
   chapter: chapter_type;
   updateChapter: (book_index: number, chapter_index: number) => void;
-  clearChatper: () => void;
+  clearChapter: () => void;
 } => {
   const [chapter, setChapter] = useState<chapter_type>();
 
@@ -20,7 +20,9 @@ export const useGetChapter = (): {
   };
 
   const fetchChapter = async (book_index: number, chapter_index: number) => {
-    const response = await fetch(`/api/verse?b=${book_index}&c=${chapter_index}`)
+    const response = await fetch(
+      `/api/verse?b=${book_index}&c=${chapter_index}`,
+    );
 
     if (response.status !== 200) {
       console.log('%cError', response);
@@ -40,7 +42,7 @@ export const useGetChapter = (): {
     const pswp = chapter_content?.querySelector('.pswp');
     if (pswp) pswp.remove();
     chapter_content.innerHTML = chapter_content.innerHTML.replace(
-      /<\!--.*?-->/g,
+      /<!--.*?-->/g,
       '',
     );
 
@@ -71,11 +73,11 @@ export const useGetChapter = (): {
       .split('VERSE_SPLIT')
       .filter((verse) => verse !== '');
     const chapter_content_text = chapter_text
-      .replaceAll(/\<.*?\>?\<.*?\>/g, '')
+      .replaceAll(/<.*?>?<.*?>/g, '')
       .split('VERSE_SPLIT')
       .filter((verse) => verse !== '');
 
-    const chapterData = chapter_content_text.map((verse, index) => {
+    return chapter_content_text.map((verse, index) => {
       return {
         link: `https://jw.org/finder?srcid=jwlshare&wtlocale=P&prefer=lang&bible=${
           book_index < 10 ? `0${book_index}` : book_index
@@ -83,21 +85,19 @@ export const useGetChapter = (): {
           3,
           '0',
         )}&pub=nwtsty`,
-        content: chapter_content_text[index]?? '',
-        content_with_links: chapter_content_with_links[index]?? '',
+        content: chapter_content_text[index] ?? '',
+        content_with_links: chapter_content_with_links[index] ?? '',
       };
     });
-
-    return chapterData;
   };
 
-  const clearChatper = () => {
+  const clearChapter = () => {
     setChapter(false);
   };
 
   return {
     chapter: chapter ?? false,
     updateChapter,
-    clearChatper,
+    clearChapter,
   };
 };
