@@ -13,8 +13,8 @@ const Index: NextPage = () => {
   const {chapter, updateChapter, clearChapter} = useGetChapter();
 
   // config
-  const [redirect] = useAtom(redirectAtom);
-  const [multiVerse] = useAtom(multiVerseAtom);
+  const [redirect, setRedirect] = useAtom(redirectAtom);
+  const [multiVerse, setMultiVerse] = useAtom(multiVerseAtom);
 
   const [command, setCommand] = useState<string>();
 
@@ -112,15 +112,22 @@ const Index: NextPage = () => {
     if (!command) return;
 
     switch (command) {
-      case 'c':
+      case 'bb':
         return clear();
       case 'b': {
         if (chapter) {
           setChapterIndex(undefined);
           clearChapter();
+          return;
         } else {
           return clear();
         }
+      }
+      case 'r': {
+        return setRedirect(!redirect);
+      }
+      case 'm': {
+        return setMultiVerse(!multiVerse);
       }
     }
 
@@ -131,12 +138,15 @@ const Index: NextPage = () => {
         handleChapterPress(parseInt(command));
       }
     } else {
-      const book = books.find(
-        (book) =>
+      const book = books.find((book) => {
+        console.log(book.book_name.toUpperCase());
+        console.log(command.toUpperCase());
+        return (
           book.book_name.toUpperCase() === command.toUpperCase() ||
           book.short_book_name.toUpperCase().replace('.', '') ===
-            command.toUpperCase(),
-      );
+            command.toUpperCase()
+        );
+      });
       if (book) {
         handleBookPress(book);
       }
