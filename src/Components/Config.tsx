@@ -1,17 +1,18 @@
-import React, {useRef} from "react";
+import React, {useEffect, useRef, useState} from "react";
 import {useAtom} from "jotai";
-import {redirectToVerse} from "../utils/initAtoms";
+import SwitchButton from "./SwitchButton";
+import {redirectAtom} from "../utils/initAtoms";
+import {ClientOnly} from "./ClientOnly";
 
 const Config: React.FC = () => {
-  const [redirectToVerre, setRedirectToVerse] = useAtom(redirectToVerse)
+  const [redirect, setRedirect] = useAtom(redirectAtom)
 
   return (
-    <div className={'bg-amber-100 w-full flex'}>
-      <label>
-        <p>Przekieruj do biblii</p>
-        <input type={'checkbox'} className="" onChange={v => setRedirectToVerse(v.target.value)} value={redirectToVerre}/>
-      </label>
-    </div>
+    <ClientOnly>
+      <div className={' w-full flex'}>
+        <SwitchButton name={'Przekieruj do Biblii'} onClick={() => setRedirect(!redirect)} state={redirect} />
+      </div>
+    </ClientOnly>
   )
 }
 

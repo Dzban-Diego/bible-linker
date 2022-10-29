@@ -4,13 +4,14 @@ import {useGetChapter} from '../utils/useGetChapter';
 import {NextPage} from "next";
 import Config from "../Components/Config";
 import {useAtom} from "jotai";
-import {redirectToVerse} from "../utils/initAtoms";
+import {useConfig} from "../utils/useConfig";
+import {redirectAtom} from "../utils/initAtoms";
 
 const Index: NextPage = () => {
   const [book, setBook] = useState<book_type>();
   const [chapter_index, setChapterIndex] = useState<number>();
   const {chapter, updateChapter, clearChatper} = useGetChapter();
-  const [redirectToVerses, setRedirectToVerses] = useAtom(redirectToVerse)
+  const [redirect, setRedirect] = useAtom(redirectAtom)
 
   const [command, setCommand] = useState<string>();
 
@@ -54,10 +55,7 @@ const Index: NextPage = () => {
 
     if(!verse) return
 
-    // todo pobrac ustawienia
-
-    console.log(redirectToVerse)
-    if(redirectToVerses){
+    if(redirect){
       window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
     }
 
