@@ -5,6 +5,7 @@ import {NextPage} from 'next';
 import Config from '../Components/Config';
 import {useAtom} from 'jotai';
 import {multiVerseAtom, redirectAtom} from '../utils/initAtoms';
+import {text} from 'stream/consumers';
 
 const Index: NextPage = () => {
   const [book, setBook] = useState<book_type>();
@@ -53,7 +54,7 @@ const Index: NextPage = () => {
     }
   };
 
-  const handleVersePress = (verse_index: number) => {
+  const handleVersePress = async (verse_index: number) => {
     if (!chapter) return;
 
     let content = '';
@@ -89,22 +90,27 @@ const Index: NextPage = () => {
       verseText = verse_index.toString();
     }
 
+    const textToCopy = `> [${book?.book_name} ${chapter_index}:${verseText}](${url}) ${content}`;
+
     // redirect
     if (redirect) {
       window.open(url, '', 'left=600,top=250,width=700,height=700');
     }
 
     // copy to clipboard
-    const el = document.createElement('textarea');
-    el.value = `> [${book?.book_name} ${chapter_index}:${verseText}](${url}) ${content}`;
-    // el.value = `(${book?.book_name} ${chapter_index}:${verse_index}) ${verse.content}`;
-    el.setAttribute('readonly', '');
-    document.body.appendChild(el);
-    el.select();
-    el.setSelectionRange(0, 99999);
-    navigator.clipboard.writeText(el.value);
-    document.execCommand('copy');
-    document.body.removeChild(el);
+    if (navigator.clipboard) {
+      navigator.clipboard.writeText(textToCopy);
+    } else {
+      const el = document.createElement('textarea');
+      el.value = textToCopy;
+      // el.value = `(${book?.book_name} ${chapter_index}:${verse_index}) ${verse.content}`;
+      el.setAttribute('readonly', '');
+      document.body.appendChild(el);
+      el.select();
+      el.setSelectionRange(0, 99999);
+      document.execCommand('copy');
+      document.body.removeChild(el);
+    }
   };
 
   const execCommand = () => {
