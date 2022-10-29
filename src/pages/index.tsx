@@ -22,7 +22,7 @@ const Index: NextPage = () => {
   const [width, setWidth] = useState<number>(0);
 
   useEffect(() => {
-    setWidth(window.innerWidth);
+    setWidth(window.outerWidth);
 
     window.addEventListener('resize', handleWindowSizeChange);
     return () => {
@@ -40,7 +40,7 @@ const Index: NextPage = () => {
   };
 
   const handleWindowSizeChange = () => {
-    setWidth(window.innerWidth);
+    setWidth(window.outerWidth);
   };
 
   const handleBookPress = (book: book_type) => {
@@ -187,25 +187,24 @@ const Index: NextPage = () => {
   return (
     <div className="text-center bg-black text-3xl">
       <header className={'flex justify-between w-full p-3'}>
-        <span className={'text-white'}>
+        <button className="bg-blue text-white" onClick={() => clear()}>
           {book ? `${book.book_name} ${chapter_index ?? ''}` : 'Biblia'}
-        </span>
-        <Config />
+        </button>
+        <Config isMobile={isMobile} />
         <div className={'flex justify-center'}>
-          <input
-            autoFocus
-            type="text"
-            className={'text-black'}
-            id="one"
-            value={command}
-            onChange={(e) => setCommand(e.target.value)}
-            onKeyDown={(event) => {
-              if (event.keyCode === 13) execCommand();
-            }}
-          />
-          <button className="bg-blue text-white" onClick={() => clear()}>
-            Lista
-          </button>
+          {!isMobile && (
+            <input
+              autoFocus
+              type="text"
+              className={'text-black'}
+              id="one"
+              value={command}
+              onChange={(e) => setCommand(e.target.value)}
+              onKeyDown={(event) => {
+                if (event.keyCode === 13) execCommand();
+              }}
+            />
+          )}
         </div>
       </header>
       <div className={'w-screen grid grid-cols-5 content-center gap-2 mb-8'}>
@@ -219,9 +218,9 @@ const Index: NextPage = () => {
               .map((book) => {
                 return (
                   <button
-                    className={
-                      'text-white flex content-between align-middle p-3'
-                    }
+                    className={`text-white flex content-between align-middle p-3 ${
+                      isMobile ? 'text-sm' : ''
+                    }`}
                     key={book.book_id}
                     onClick={() => handleBookPress(book)}
                     style={{backgroundColor: `${book.color}`}}>
@@ -251,9 +250,9 @@ const Index: NextPage = () => {
               .map((book) => {
                 return (
                   <button
-                    className={
-                      'text-white flex content-between align-middle p-3'
-                    }
+                    className={`text-white flex content-between align-middle p-3 ${
+                      isMobile ? 'text-sm' : ''
+                    }`}
                     key={book.book_id}
                     onClick={() => handleBookPress(book)}
                     style={{backgroundColor: `${book.color}`}}>
