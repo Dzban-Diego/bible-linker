@@ -1,11 +1,12 @@
 import React from 'react';
 import {useAtom} from 'jotai';
 import SwitchButton from './SwitchButton';
-import {redirectAtom} from '../utils/initAtoms';
+import {multiVerseAtom, redirectAtom} from '../utils/initAtoms';
 import {ClientOnly} from './ClientOnly';
 
 const Config: React.FC = () => {
   const [redirect, setRedirect] = useAtom(redirectAtom);
+  const [multiVerse, setMultiVerse] = useAtom(multiVerseAtom);
 
   return (
     <ClientOnly>
@@ -14,6 +15,11 @@ const Config: React.FC = () => {
           name={'Przekieruj do Biblii'}
           onClick={() => setRedirect(!redirect)}
           state={redirect}
+        />
+        <SwitchButton
+          name={'Kilka wersetów'}
+          onClick={() => setMultiVerse(!multiVerse)}
+          state={multiVerse}
         />
       </div>
     </ClientOnly>

@@ -4,13 +4,17 @@ import {useGetChapter} from '../utils/useGetChapter';
 import {NextPage} from 'next';
 import Config from '../Components/Config';
 import {useAtom} from 'jotai';
-import {redirectAtom} from '../utils/initAtoms';
+import {multiVerseAtom, redirectAtom} from '../utils/initAtoms';
 
 const Index: NextPage = () => {
   const [book, setBook] = useState<book_type>();
   const [chapter_index, setChapterIndex] = useState<number>();
+  const [firstVerse, setFirtVerse] = useState<number | false>(false);
   const {chapter, updateChapter, clearChapter} = useGetChapter();
+
+  // config
   const [redirect] = useAtom(redirectAtom);
+  const [multiVerse] = useAtom(multiVerseAtom);
 
   const [command, setCommand] = useState<string>();
 
@@ -31,6 +35,7 @@ const Index: NextPage = () => {
     setBook(undefined);
     setChapterIndex(undefined);
     clearChapter();
+    setFirtVerse(false);
   };
 
   const handleWindowSizeChange = () => {
@@ -50,16 +55,48 @@ const Index: NextPage = () => {
 
   const handleVersePress = (verse_index: number) => {
     if (!chapter) return;
-    const verse = chapter[verse_index - 1];
 
-    if (!verse) return;
+    let content = '';
+    let verseText = '';
+    let url = '';
 
-    if (redirect) {
-      window.open(verse.link, '', 'left=600,top=250,width=700,height=700');
+    if (multiVerse) {
+      if (firstVerse === verse_index) {
+        return setFirtVerse(false);
+      }
+      if (firstVerse) {
+        const firstVerseObj = chapter[firstVerse - 1];
+        if (!firstVerseObj) return;
+        url = firstVerseObj.link;
+        verseText = `${firstVerse}-${verse_index}`;
+
+        for (let i = firstVerse; i <= verse_index; i++) {
+          const verse = chapter[i - 1];
+          if (!verse) return;
+          content += `${i}. ${verse.content}`;
+        }
+
+        setFirtVerse(false);
+      } else {
+        return setFirtVerse(verse_index);
+      }
+    } else {
+      const verse = chapter[verse_index - 1];
+      if (!verse) return;
+
+      url = verse.link;
+      content = verse.content;
+      verseText = verse_index.toString();
     }
 
+    // redirect
+    if (redirect) {
+      window.open(url, '', 'left=600,top=250,width=700,height=700');
+    }
+
+    // copy to clipboard
     const el = document.createElement('textarea');
-    el.value = `> [${book?.book_name} ${chapter_index}:${verse_index}](${verse.link}) ${verse.content}`;
+    el.value = `> [${book?.book_name} ${chapter_index}:${verseText}](${url}) ${content}`;
     // el.value = `(${book?.book_name} ${chapter_index}:${verse_index}) ${verse.content}`;
     el.setAttribute('readonly', '');
     document.body.appendChild(el);
@@ -117,7 +154,9 @@ const Index: NextPage = () => {
       arr.push(
         <button
           className={`text-white border-0 p-3 ${
-            type === 'verses' ? 'bg-[#757575]' : 'bg-[#746a84]'
+            type === 'verses'
+              ? `${i === firstVerse ? 'bg-[#746a84]' : 'bg-[#757575]'}`
+              : 'bg-[#746a84]'
           }`}
           key={`${type}-${i}`}
           onClick={() => callback(i)}>
