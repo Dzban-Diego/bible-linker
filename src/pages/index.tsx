@@ -4,8 +4,7 @@ import {useGetChapter} from '../utils/useGetChapter';
 import {NextPage} from 'next';
 import Config from '../Components/Config';
 import {useAtom} from 'jotai';
-import {multiVerseAtom, redirectAtom} from '../utils/initAtoms';
-import {text} from 'stream/consumers';
+import {multiVerseAtom, redirectAtom, templateAtom} from '../utils/initAtoms';
 
 const Index: NextPage = () => {
   const [book, setBook] = useState<book_type>();
@@ -16,6 +15,7 @@ const Index: NextPage = () => {
   // config
   const [redirect, setRedirect] = useAtom(redirectAtom);
   const [multiVerse, setMultiVerse] = useAtom(multiVerseAtom);
+  const [template, setTemplate] = useAtom(templateAtom);
 
   const [command, setCommand] = useState<string>();
 
@@ -90,7 +90,18 @@ const Index: NextPage = () => {
       verseText = verse_index.toString();
     }
 
-    const textToCopy = `> [${book?.book_name} ${chapter_index}:${verseText}](${url}) ${content}`;
+    const textToCopy = () => {
+      switch (template) {
+        case 'text':
+          return `(${book?.book_name} ${chapter_index}:${verseText}) ${content}`;
+        case 'markdown':
+          return `> [${book?.book_name} ${chapter_index}:${verseText}](${url}) ${content}`;
+        case 'link':
+          return `${url}`;
+        case 'markdown-link':
+          return `[${book?.book_name} ${chapter_index}:${verseText}](${url})`;
+      }
+    };
 
     // redirect
     if (redirect) {
@@ -99,10 +110,10 @@ const Index: NextPage = () => {
 
     // copy to clipboard
     if (navigator.clipboard) {
-      navigator.clipboard.writeText(textToCopy);
+      navigator.clipboard.writeText(textToCopy());
     } else {
       const el = document.createElement('textarea');
-      el.value = textToCopy;
+      el.value = textToCopy();
       // el.value = `(${book?.book_name} ${chapter_index}:${verse_index}) ${verse.content}`;
       el.setAttribute('readonly', '');
       document.body.appendChild(el);
@@ -129,9 +140,24 @@ const Index: NextPage = () => {
           return clear();
         }
       }
+      // templates
+      case 'tt': {
+        return setTemplate('text');
+      }
+      case 'tm': {
+        return setTemplate('markdown');
+      }
+      case 'tl': {
+        return setTemplate('link');
+      }
+      case 'tml': {
+        return setTemplate('markdown-link');
+      }
+      // redirect
       case 'r': {
         return setRedirect(!redirect);
       }
+      // multiVerse
       case 'm': {
         return setMultiVerse(!multiVerse);
       }
