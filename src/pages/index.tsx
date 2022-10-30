@@ -137,7 +137,7 @@ const Index: NextPage = () => {
       }
     }
 
-    if (parseInt(command)) {
+    if (book) {
       if (chapter_index) {
         handleVersePress(parseInt(command));
       } else {
