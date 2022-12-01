@@ -3,7 +3,7 @@ import {useState} from 'react';
 export type verse_type = {
   link: string;
   content: string;
-  content_with_links: string;
+  content_with_links?: string;
 };
 
 export type chapter_type = verse_type[] | false;
@@ -20,75 +20,37 @@ export const useGetChapter = (): {
   };
 
   const fetchChapter = async (book_index: number, chapter_index: number) => {
-    const response = await fetch(
-      `/api/verse?b=${book_index}&c=${chapter_index}`,
-    );
+    const range = `${book_index}${String(chapter_index).padStart(
+      3,
+      '0',
+    )}001-${book_index}${String(chapter_index).padStart(3, '0')}179`;
+
+    console.log(range);
+
+    const response = await fetch(`/api/verse?range=${range}`);
 
     if (response.status !== 200) {
       console.log('%cError', response);
     }
 
     const data = await response.json();
-    const data_html = new DOMParser().parseFromString(data.data, 'text/html');
-
-    const article_content = data_html.querySelector('article');
-    const chapter_content = article_content?.querySelector('.scalableui');
-
-    if (!chapter_content) return false;
-
-    // remove unnecessary tags
-    const header = chapter_content?.querySelector('header');
-    if (header) header.remove();
-    const pswp = chapter_content?.querySelector('.pswp');
-    if (pswp) pswp.remove();
-    chapter_content.innerHTML = chapter_content.innerHTML.replace(
-      /<!--.*?-->/g,
-      '',
-    );
-
-    const content = [];
-    // for every .v component
-    const verseClassCount = chapter_content.getElementsByClassName('v').length;
-    for (let i = 0; i < verseClassCount; i++) {
-      const vComponent = chapter_content.querySelector('.v');
-      if (vComponent) {
-        // set first verse number
-        vComponent.innerHTML = vComponent.innerHTML.replace(
-          /<strong>.*<\/strong>/g,
-          '1',
-        );
-        content.push(vComponent.innerHTML);
-        vComponent.remove();
-      }
-    }
-
-    let chapter_text = content.join('');
-    chapter_text = chapter_text.replaceAll('&nbsp;', ' ');
-    chapter_text = chapter_text.replaceAll(
-      /<a href="\/pl\/wol\/dx\/r12\/lp-p\/\d*\/\d*" class="[\w\s]*">(\d*\s)<\/a>/g,
-      'VERSE_SPLIT',
-    );
-
-    const chapter_content_with_links = chapter_text
-      .split('VERSE_SPLIT')
-      .filter((verse) => verse !== '');
-    const chapter_content_text = chapter_text
-      .replaceAll(/<.*?>?<.*?>/g, '')
-      .split('VERSE_SPLIT')
-      .filter((verse) => verse !== '');
-
-    return chapter_content_text.map((verse, index) => {
+    const verses = data.data.ranges[range].verses.map((verse: any) => {
+      const temp = document.createElement('div');
+      temp.innerHTML = verse.content;
+      const verseContent = temp.textContent;
       return {
-        link: `https://jw.org/finder?srcid=jwlshare&wtlocale=P&prefer=lang&bible=${
-          book_index < 10 ? `0${book_index}` : book_index
-        }${String(chapter_index).padStart(3, '0')}${String(index + 1).padStart(
+        link: `https://jw.org/finder?srcid=jwlshare&wtlocale=P&prefer=lang&bible=${String(
+          verse.bookNumber,
+        ).padStart(2, '0')}${String(verse.chapterNumber).padStart(
           3,
           '0',
-        )}&pub=nwtsty`,
-        content: chapter_content_text[index] ?? '',
-        content_with_links: chapter_content_with_links[index] ?? '',
+        )}${String(verse.verseNumber).padStart(3, '0')}&pub=nwtsty`,
+        content: verseContent,
       };
     });
+
+    console.log(verses);
+    return verses;
   };
 
   const clearChapter = () => {

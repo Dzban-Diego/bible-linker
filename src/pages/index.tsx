@@ -74,7 +74,7 @@ const Index: NextPage = () => {
         for (let i = firstVerse; i <= verse_index; i++) {
           const verse = chapter[i - 1];
           if (!verse) return;
-          content += `${i}. ${verse.content}`;
+          content += `${verse.content}`;
         }
 
         setFirtVerse(false);

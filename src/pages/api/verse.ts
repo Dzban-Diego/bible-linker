@@ -4,8 +4,9 @@ export default async function handler(
   req: NextApiRequest,
   res: NextApiResponse,
 ) {
+  console.log(req.query.range);
   const data = await fetch(
-    `https://wol.jw.org/pl/wol/b/r12/lp-p/nwtsty/${req.query.b}/${req.query.c}`,
-  ).then((response) => response.text());
+    `https://www.jw.org/pl/biblioteka/biblia/biblia-wydanie-do-studium/ksiegi/json/html/${req.query.range}`,
+  ).then((response) => response.json());
   res.status(200).json({data: data});
 }
