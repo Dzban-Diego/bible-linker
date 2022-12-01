@@ -26,6 +26,13 @@ const Config: React.FC<Props> = ({isMobile}) => {
   });
   const router = useRouter();
 
+  const templateOptions: templateOptinType[] = [
+    {id: 1, text: 'Markdown', value: 'markdown'},
+    {id: 2, text: 'Text', value: 'text'},
+    {id: 3, text: 'Link', value: 'link'},
+    {id: 4, text: 'Link Makdown', value: 'markdown-link'},
+  ];
+
   useEffect(() => {
     if (template) {
       const currentTemplate = templateOptions.find(
@@ -48,13 +55,6 @@ const Config: React.FC<Props> = ({isMobile}) => {
     text: string;
     value: templateType;
   };
-
-  const templateOptions: templateOptinType[] = [
-    {id: 1, text: 'Markdown', value: 'markdown'},
-    {id: 2, text: 'Text', value: 'text'},
-    {id: 3, text: 'Link', value: 'link'},
-    {id: 4, text: 'Link Makdown', value: 'markdown-link'},
-  ];
 
   const handleTemplateChange = (v: templateOptinType) => {
     setTemplateOption(v);
